@@ -1,0 +1,5 @@
+useDynLib(ICRanks, .registration=TRUE)
+importFrom(Rcpp, evalCpp)
+importFrom(multcomp, contrMat)
+importFrom("stats", "qchisq", "quantile", "rnorm")
+export(ic.ranks)
