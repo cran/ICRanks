@@ -138,7 +138,7 @@ NumericMatrix PartitioningRankingBlock(NumericVector y, NumericVector sigma, Num
 
 	// Test the upper level with all equalities
 	double Likelihood0 = LikelihoodMat[0][n - 1];
-	if (Likelihood0<crit[1])
+	if (Likelihood0<crit[0])
 	{
 		for (int i = 0; i<n; i++)
 		{
@@ -462,7 +462,8 @@ NumericMatrix PartitioningRankingLevel(NumericVector y, NumericVector sigma, Num
 	}
 	// Test the upper level with all equalities
 	double Likelihood0 = LikelihoodMat[0][n - 1];
-	if (Likelihood0<crit[1])
+	//Rcout<<"Crit 1 = "<<crit[1]<<",Lik = "<<Likelihood0<<"\n";
+	if (Likelihood0<crit[0])
 	{
 		for (int i = 0; i<n; i++)
 		{

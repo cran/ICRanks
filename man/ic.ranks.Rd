@@ -7,7 +7,7 @@
 ic.ranks(y, sigma = rep(1, length(y)), Method = c("Exact", "Bound", "Tukey",
   "SeqTukey"), BoundChoice = c("Upper", "Lower"), ExactAlgo = c("Level",
   "Block"), alpha = 0.05, control = list(crit = NULL, trace = TRUE, adjustL
-  = FALSE, adjustU = FALSE, n_adjust = n - 1, N = 10^4))
+  = FALSE, adjustU = FALSE, n_adjust = length(y) - 1, N = 10^4))
 }
 \arguments{
 \item{y}{a real vector of observed data.}
@@ -52,7 +52,7 @@ The lower- and upper-bound CIs are calculated with an algorithm whose complexity
 Both "Tukey" and "SeqTukey" are based on multiple comparison testing and are superior to the LR-based CIs if the centers are far apart from each others and if the standard deviations are not significantly different from each others among the centers. The sequential rejective variant of Tukey's HSD rejects at least as much as Tukey's HSD and thus produces generally shorter confidence intervals for the ranks.
 }
 \examples{
-TrueCenters = 1:50
+TrueCenters = 1:10
 n = 10; alpha = 0.05; sigma = runif(n,min=0.5,max=1.5)
 y = as.numeric(sapply(1:n, function(ll) rnorm(1,TrueCenters[ll],sd=sigma[ll])))
 ind = sort.int(y, index.return = TRUE)$ix
@@ -75,9 +75,9 @@ LowerExact
 LowerTuk 
 }
 \references{
-Simultaneous confidence sets for ranks using the partitioning principle - Technical report (Arxiv).
+Diaa Al Mohamad and Erik W. van Zwet and Jelle J. Goeman and Aldo Solari, Simultaneous confidence sets for ranks using the partitioning principle - Technical report (2017).
 
-An improvement of Tukey's HSD with application to ranking institutions (Arxiv).
+Diaa Al Mohamad and Jelle J. Goeman and Erik W. van Zwet, An improvement of Tukey's HSD with application to ranking institutions (2017). https://arxiv.org/abs/1708.02428
 }
 \author{
 Diaa Al Mohamad and Jelle J. Goeman and Erik W. van Zwet. Correspondence to d.al_mohamad@lumc.nl

@@ -20,10 +20,10 @@
 #' @details Both "Tukey" and "SeqTukey" are based on multiple comparison testing and are superior to the LR-based CIs if the centers are far apart from each others and if the standard deviations are not significantly different from each others among the centers. The sequential rejective variant of Tukey's HSD rejects at least as much as Tukey's HSD and thus produces generally shorter confidence intervals for the ranks. 
 #' @author Diaa Al Mohamad and Jelle J. Goeman and Erik W. van Zwet. Correspondence to d.al_mohamad@@lumc.nl
 #' @return a list of two vectors containing the lower and upper bounds of the confidence intervals for the sorted observed centers.
-#' @references Simultaneous confidence sets for ranks using the partitioning principle - Technical report (Arxiv).
-#' @references An improvement of Tukey's HSD with application to ranking institutions (Arxiv).
+#' @references Diaa Al Mohamad and Erik W. van Zwet and Jelle J. Goeman and Aldo Solari, Simultaneous confidence sets for ranks using the partitioning principle - Technical report (2017).
+#' @references Diaa Al Mohamad and Jelle J. Goeman and Erik W. van Zwet, An improvement of Tukey's HSD with application to ranking institutions (2017). https://arxiv.org/abs/1708.02428
 #' @examples
-#' TrueCenters = 1:50
+#' TrueCenters = 1:10
 #' n = 10; alpha = 0.05; sigma = runif(n,min=0.5,max=1.5)
 #' y = as.numeric(sapply(1:n, function(ll) rnorm(1,TrueCenters[ll],sd=sigma[ll])))
 #' ind = sort.int(y, index.return = TRUE)$ix
@@ -46,9 +46,9 @@
 #' LowerTuk 
 
 #' @export
-ic.ranks = function(y, sigma = rep(1,length(y)), Method = c("Exact","Bound","Tukey","SeqTukey"), BoundChoice = c("Upper", "Lower"), ExactAlgo = c("Level","Block"), alpha = 0.05, control = list(crit = NULL, trace = TRUE, adjustL = FALSE, adjustU = FALSE, n_adjust = n-1, N = 10^4))
+ic.ranks = function(y, sigma = rep(1,length(y)), Method = c("Exact","Bound","Tukey","SeqTukey"), BoundChoice = c("Upper", "Lower"), ExactAlgo = c("Level","Block"), alpha = 0.05, control = list(crit = NULL, trace = TRUE, adjustL = FALSE, adjustU = FALSE, n_adjust = length(y)-1, N = 10^4))
 {
-if(is.null(Method)) Method = "SeqTukey"
+if(length(Method) != 1) Method = "SeqTukey"
 trace = control$trace
 if(is.null(trace)) trace = TRUE
 if(!(Method %in% c("Exact","Bound","Tukey","SeqTukey"))) {print("Error! Method not supported."); return(0)}
@@ -64,8 +64,8 @@ ranks = NULL
 if(n <= 2 & Method == "Bound") {print("Upper- and Lower-bound CIs require at least three centers"); return(0)}
 
 if(Method == "Exact"){
-  crit = qchisq(1-alpha,1:(n-1))
-  if(is.null(ExactAlgo)) ExactAlgo = "Block"
+  crit = qchisq(1-alpha,(n-1):1)
+  if(length(ExactAlgo)!=1) ExactAlgo = "Block"
   if(!(ExactAlgo %in% c("Level","Block"))){print("Error! Could not recognize your choice for the type of the algorithm to be used."); return(0)}
   cat("\n Performing an exact partitioing procedure.\n")
   if(n>=45) cat("Execution time on regular computers might take (if you are not lucky) more than a week in worst case scenario. Check details in the help!")
@@ -85,12 +85,11 @@ if(Method == "Exact"){
   {
 	ranks = PartitioningRankingLevel(y, sigma, crit, n, trace)
 	ranks = list(Lower = ranks[,1], Upper = ranks[,2])
-
   }
 }
 if(Method == "Bound")
 {
-  if(is.null(BoundChoice)) BoundChoice = "Upper"
+  if(length(BoundChoice)!= 1) BoundChoice = "Upper"
   if(!(BoundChoice %in% c("Upper", "Lower"))){print("Error! Could not recognize your choice whether it is upper of lower bound."); return(0)}
   adjustL = control$adjustL
   if(is.null(adjustL)) adjustL = FALSE
@@ -98,7 +97,13 @@ if(Method == "Bound")
   if(is.null(adjustU)) adjustU = FALSE
   n_adjust = control$n_adjust
   if(is.null(n_adjust)) n_adjust = n-1
-
+  n_adjust = floor(n_adjust)
+  if(n_adjust > n-1 | n_adjust<1){n_adjust = n-1; cat(paste("n_adjust cannot take values only between 1 and ", n-1)); cat(". Default value is considered.")}
+  if(sum((y - sum(y/sigma^2)/(sum(1/sigma^2)))^2/sigma^2) < qchisq(1-alpha,n-1))
+  {
+	cat("Process ended with trivial confidence intervals.\n")
+	return(list(Lower = 1:n, Upper = 1:n))
+  }
   if(BoundChoice == "Lower")
   {
 	ranks = ApproximatePartition(y,sigma,"Lower", alpha, 1)
@@ -107,7 +112,7 @@ if(Method == "Bound")
 	  ind = which(ranks$Upper == n)[1]
 	  n_adjust = min(ranks$BlockMax[1:ind])+1
 	  ranks = ApproximatePartition(y,sigma,"Lower", alpha, n_adjust)
-	  if(trace == TRUE) cat(paste("\n Adjustment on the lower bound. Intersection with the chi-square quantile at n_adjust = ",n_adjust))
+	  if(trace == TRUE) cat(paste("\n Adjustment on the lower bound. Intersection with the chi-square quantile curve at n_adjust = ",n_adjust))
 	}
 	if(trace == TRUE)
 	{
@@ -115,7 +120,7 @@ if(Method == "Bound")
 	  NbCorrectRanks = mean(ranksU$Upper == ranks$Upper & ranksU$Lower == ranks$Lower)
 	  MaxErrorPerCI = max(ranksU$Upper - ranks$Upper, ranksU$Lower - ranks$Lower) 
 	  cat(paste("\n Lower-bound confidence intervals for the ranks are calculated at simultaneous confidence level ",1-alpha))
-	  cat(paste(paste("\n Percentage of correct confidence intervals is ", NbCorrectRanks),"\n"))
+	  cat(paste(paste("\n Percentage of correct confidence intervals is ", 100*NbCorrectRanks),"/100\n"))
 	  cat(paste("\n Maximum CI-length error per center is ",MaxErrorPerCI))
 	}
 	
@@ -126,11 +131,13 @@ if(Method == "Bound")
 	ranks = ApproximatePartition(y,sigma,"Upper", alpha, n_adjust)
 	if(trace == TRUE)
 	{
-	  ranksL = ApproximatePartition(y,sigma,"Lower", alpha, 1)
+	  ind = which(ranks$Upper == n)[1]
+	  n_adjustL = min(ranks$BlockMax[1:ind])+1
+	  ranksL = ApproximatePartition(y,sigma,"Lower", alpha, n_adjustL)
 	  NbCorrectRanks = mean(ranks$Upper == ranksL$Upper & ranks$Lower == ranksL$Lower)
 	  MaxErrorPerCI = max(ranks$Upper - ranksL$Upper, ranks$Lower - ranksL$Lower) 
 	  cat(paste("\n Upper-bound confidence intervals for the ranks are calculated at simultaneous confidence level ",1-alpha))
-	  cat(paste(paste("\n Percentage of correct confidence intervals is ", NbCorrectRanks),"\n"))
+	  cat(paste(paste("\n Percentage of correct confidence intervals is ", 100*NbCorrectRanks),"/100\n"))
 	  cat(paste("\n Maximum CI-length error per center is ",MaxErrorPerCI)); cat("\n")
 	}
 
@@ -143,6 +150,7 @@ if(Method == "Tukey")
  if(is.null(N)) N = 10^4
  crit = control$crit
  if(is.null(crit)){
+  set.seed(16021988)
   x=t(mapply(rnorm,N,0,sigma))
   if(n<100){
 	Cp=contrMat(rep(1,n), type ="Tukey")    # only dependence on multcomp 
@@ -169,7 +177,7 @@ if(Method == "Tukey")
  }
  rm(x)
  ranks = tukey(y,sigma,alpha, crit)
- cat(paste("\n Confidence intervals for ranks calculated using Tukey's HSD procedure at simultaneous level", 1-alpha))
+ if(trace == TRUE) cat(paste("\n Confidence intervals for ranks calculated using Tukey's HSD procedure at simultaneous level", 1-alpha))
 }
 
 if(Method == "SeqTukey")
@@ -183,8 +191,8 @@ if(Method == "SeqTukey")
    cat("\n")
  }
 }
-cat(paste(paste("\n Number of compared centers is ",n),"\n"))
-return(list(Lower = ranks$Lower, Upper = ranks$Upper))
+ if(trace == TRUE) cat(paste(paste("\n Number of compared centers is ",n),"\n"))
+ return(list(Lower = ranks$Lower, Upper = ranks$Upper))
 }
 
 ############################################
@@ -294,7 +302,7 @@ StepDownTukeySeqRej = function(y,sigma,alpha=0.05,N = 10^4)
  }
  NegPairs[,2] = PosPairs[,1] # Those pairs stay untouched because they are never rejected
  NegPairs[,1] = PosPairs[,2] 
-
+ set.seed(16021988)
  x=t(mapply(rnorm,N,0,sigma))  
  Diff = numeric(N)
  for(k in 1:N)
@@ -345,21 +353,17 @@ rm(x)
 ranks = matrix(0,nrow = n,ncol = 2)
 ranks[,1] = 1:n
 ranks[,2] = 1:n
-indU = which(PosPairs[,1]==1)
-if(length(indU) > 0) ranks[1,2] = PosPairs[indU[length(indU)],2]
-
+ranks[1,2] = 1+sum(PosPairs[,1]==1)
 for(i in 2:(n-1))
 {
-	indU = which(PosPairs[,1]==i)
-	indL = which(PosPairs[,2]==i)
-	if(length(indU) > 0) ranks[i,2] = PosPairs[indU[length(indU)],2]
-	if(length(indL) > 0 ) ranks[i,1] = PosPairs[indL[1],1]	
+	ranks[i,1] = i - sum(PosPairs[,2] == i)
+	ranks[i,2] = i + sum(PosPairs[,1]==i)
 }
-indL = which(PosPairs[,2]==n)
-if(length(indL) > 0) ranks[n,1] = PosPairs[indL[1],1]
+ranks[n,1] = n - sum(PosPairs[,2] == n)
 
 return(list(Lower = ranks[,1], Upper = ranks[,2], NbSteps = NBSteps))
 }
+
 
 
 
