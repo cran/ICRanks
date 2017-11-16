@@ -158,7 +158,7 @@ if(Method == "Tukey")
 	std=diag(S)^(-1/2)                      # 1/(standard deviations of differences)
 	d=diag(std)%*%Cp%*%x                    # standardized differences
 	crit=quantile(apply(abs(d),2,max),1-alpha)   
-	rm(d); rm(std); rm(S); rm(Cp) 
+	rm(d); rm(std); rm(S); rm(Cp); rm(x)
   }else
   {
 	# Quantile calculus for larger sample size
@@ -173,9 +173,10 @@ if(Method == "Tukey")
   
 	crit = quantile(Diff,1-alpha)
 	rm(Diff)
+	rm(x)
   }
  }
- rm(x)
+ 
  ranks = tukey(y,sigma,alpha, crit)
  if(trace == TRUE) cat(paste("\n Confidence intervals for ranks calculated using Tukey's HSD procedure at simultaneous level", 1-alpha))
 }

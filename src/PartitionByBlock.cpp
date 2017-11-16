@@ -155,7 +155,7 @@ NumericMatrix PartitioningRankingBlock(NumericVector y, NumericVector sigma, Num
 		int* InqPosi = new int[n - 1];
 		int* ConfigCompRight = new int[n - 1]; 
 		int ConfigBaseLen = 2;
-		int* BlockConfig = new int[2];
+		int BlockConfig[2];
 		//bool check_significance = false;
 		for (int i = 0; i < n - 1; i++)
 		{
@@ -453,8 +453,8 @@ NumericMatrix PartitioningRankingLevel(NumericVector y, NumericVector sigma, Num
 	}
 
 	// Definition and initialization of the vector of ranks
-	int* Lower = new int[n];
-	int* Upper = new int[n];
+	NumericVector Lower(n);
+	NumericVector Upper(n);
 	for (int i = 0; i<n; i++)
 	{
 		Lower[i] = i;
@@ -534,6 +534,7 @@ NumericMatrix PartitioningRankingLevel(NumericVector y, NumericVector sigma, Num
 			}
 			
 		}
+		delete InqPosi;
 	}
 	NumericMatrix CIs(n,2);
 	for(int i = 0; i<n; i++)
