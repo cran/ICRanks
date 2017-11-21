@@ -386,18 +386,18 @@ NumericMatrix PartitioningRankingBlock(NumericVector y, NumericVector sigma, Num
 
 		
 
-		delete InqPosi;
-		delete ConfigCompRight;
+		delete[] InqPosi;
+		delete[] ConfigCompRight;
 
 	}
 
 	// Free some space.
-	for (int i = 0; i<n - 1; i++)
+	for (int i = 0; i<n; i++)
 	{
-		delete LikelihoodMat[i];
+		delete[] LikelihoodMat[i];
 	}
-	delete LikelihoodMat;
-	delete PowToN;
+	delete[] LikelihoodMat;
+	delete[] PowToN;
 	
 	NumericMatrix CIs(n,2);
 	for(int i = 0; i<n; i++)
@@ -534,7 +534,7 @@ NumericMatrix PartitioningRankingLevel(NumericVector y, NumericVector sigma, Num
 			}
 			
 		}
-		delete InqPosi;
+		delete[] InqPosi;
 	}
 	NumericMatrix CIs(n,2);
 	for(int i = 0; i<n; i++)
@@ -544,16 +544,16 @@ NumericMatrix PartitioningRankingLevel(NumericVector y, NumericVector sigma, Num
 	}
 	
 	// Free some space.
-	for (int i = 0; i<n - 1; i++)
+	for (int i = 0; i<n; i++)
 	{
-		delete LikelihoodMat[i];
+		delete[] LikelihoodMat[i];
 	}
-	delete LikelihoodMat;
-	for (int i = 0; i<n - 1; i++)
+	delete[] LikelihoodMat;
+	for (int i = 0; i<n; i++)
 	{
-		delete CnkMat[i];
+		delete[] CnkMat[i];
 	}
-	delete CnkMat;
+	delete[] CnkMat;
 	return CIs;
 }
 
