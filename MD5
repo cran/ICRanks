@@ -1,7 +1,7 @@
-77d5eecdaaf4bd27e93257205134812d *DESCRIPTION
-eca41d18d7d0e9f253911f178f7e00b1 *NAMESPACE
-963df7d48f5e75f61cde647c8e97d6be *R/RcppExports.R
-a97c03b9776b039ac49c7e583a831d22 *R/ic.ranks.R
-fe53f3959b2c8644349dd6335600a267 *man/ic.ranks.Rd
-5cad76d2b26b07be9dc7c3f9d2acd2db *src/PartitionByBlock.cpp
-c32d1bd4e428d12adcf6eb9b8ca482d8 *src/RcppExports.cpp
+4959667cade32b630cff50a9ec78379f *DESCRIPTION
+f01572193aed3035d3f8aada6459b346 *NAMESPACE
+6e2d86d1b4e2a92c828e7d7685ad1073 *R/RcppExports.R
+3f65996b22e3627227d543cfcc8ec11c *R/ic.ranks.R
+ebeb97371f76e528c848c9820241e680 *man/ic.ranks.Rd
+f0df5a5cd560214863c68cde6ff42b3f *src/PartitionByBlock.cpp
+2d36275cd05c74b01fa2377c0583035d *src/RcppExports.cpp

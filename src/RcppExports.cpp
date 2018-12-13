@@ -5,25 +5,6 @@
 
 using namespace Rcpp;
 
-// PartitioningRankingBlock
-NumericMatrix PartitioningRankingBlock(NumericVector y, NumericVector sigma, NumericVector crit, NumericVector MinBlock, NumericVector MaxBlock, NumericVector Lower, NumericVector Upper, int n, bool trace);
-RcppExport SEXP _ICRanks_PartitioningRankingBlock(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP MinBlockSEXP, SEXP MaxBlockSEXP, SEXP LowerSEXP, SEXP UpperSEXP, SEXP nSEXP, SEXP traceSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type crit(critSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type MinBlock(MinBlockSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type MaxBlock(MaxBlockSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Lower(LowerSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Upper(UpperSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
-    rcpp_result_gen = Rcpp::wrap(PartitioningRankingBlock(y, sigma, crit, MinBlock, MaxBlock, Lower, Upper, n, trace));
-    return rcpp_result_gen;
-END_RCPP
-}
 // PartitioningRankingLevel
 NumericMatrix PartitioningRankingLevel(NumericVector y, NumericVector sigma, NumericVector crit, int n, bool trace);
 RcppExport SEXP _ICRanks_PartitioningRankingLevel(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP nSEXP, SEXP traceSEXP) {
@@ -39,10 +20,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// PartitioningRankingBlockCorrectOrder
+NumericMatrix PartitioningRankingBlockCorrectOrder(NumericVector y, NumericVector sigma, NumericVector crit, NumericVector MinBlock, NumericVector MaxBlock, NumericVector Lower, NumericVector Upper, int n, bool trace);
+RcppExport SEXP _ICRanks_PartitioningRankingBlockCorrectOrder(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP MinBlockSEXP, SEXP MaxBlockSEXP, SEXP LowerSEXP, SEXP UpperSEXP, SEXP nSEXP, SEXP traceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type MinBlock(MinBlockSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type MaxBlock(MaxBlockSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Lower(LowerSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type Upper(UpperSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
+    rcpp_result_gen = Rcpp::wrap(PartitioningRankingBlockCorrectOrder(y, sigma, crit, MinBlock, MaxBlock, Lower, Upper, n, trace));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ICRanks_PartitioningRankingBlock", (DL_FUNC) &_ICRanks_PartitioningRankingBlock, 9},
     {"_ICRanks_PartitioningRankingLevel", (DL_FUNC) &_ICRanks_PartitioningRankingLevel, 5},
+    {"_ICRanks_PartitioningRankingBlockCorrectOrder", (DL_FUNC) &_ICRanks_PartitioningRankingBlockCorrectOrder, 9},
     {NULL, NULL, 0}
 };
 

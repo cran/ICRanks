@@ -4,21 +4,22 @@
 \alias{ic.ranks}
 \title{Confidence intervals for ranks}
 \usage{
-ic.ranks(y, sigma = rep(1, length(y)), Method = c("Exact", "Bound", "Tukey",
-  "SeqTukey"), BoundChoice = c("Upper", "Lower"), ExactAlgo = c("Level",
-  "Block"), alpha = 0.05, control = list(crit = NULL, trace = TRUE, adjustL
-  = FALSE, adjustU = FALSE, n_adjust = length(y) - 1, N = 10^4))
+ic.ranks(y, sigma = rep(1, length(y)), Method = c("ExactLR", "BoundLR",
+  "Tukey", "SeqTukey", "ApproximateLR", "TukeyNoTies"),
+  BoundChoice = c("Upper", "Lower"), ApproxAlgo = c("Exact", "Upper"),
+  alpha = 0.05, control = list(crit = NULL, trace = TRUE, adjustL =
+  FALSE, adjustU = FALSE, n_adjust = length(y) - 1, N = 10^4))
 }
 \arguments{
 \item{y}{a real vector of observed data.}
 
 \item{sigma}{a vector of standard deviations. If sigma is a single value, then we consider that all centers have the same standard deviation.}
 
-\item{Method}{a character indicating the method used to produce the confidence intervals. The "Exact" produces confidence intervals using the partitioning principle and the likelihood ratio test. The "Bound" choice produces lower- or upper-bound confidence intervals (according to the "BoundChoice") for the ranks using a fast algorithm. The "Tukey" choice produces simultaneous confidence intervals for the ranks using Tukey's HSD. The "SeqTukey" produces simultaneous confidence intervals for the ranks using a sequential-rejective algorithm.}
+\item{Method}{a character indicating the method used to produce the confidence intervals. The "Exact" produces confidence intervals using the partitioning principle and the likelihood ratio test. The "Bound" choice produces lower- or upper-bound confidence intervals (according to the "BoundChoice") for the ranks using a fast algorithm. The "Tukey" choice produces simultaneous confidence intervals for the ranks using Tukey's HSD. The "SeqTukey" produces simultaneous confidence intervals for the ranks using a sequential-rejective algorithm. The "Approximate" choice provides approximate confidence intervals which are shorter than exact ones by considering a subset of the partitions (the correctly ordered ones, see refs). The "TukeyNoTies" choice calculates a readustement for Tukey's method under the assumption that there are no ties and then use Tukey's method again with adjusted level.}
 
 \item{BoundChoice}{a character entry which is only relevant if the "Bound" choice is picked in the Method parameter. The default value is "Upper" which results in the upper-bound CIs for the ranks. If "Lower" is chosen, then the lower-bound CIs are generated.}
 
-\item{ExactAlgo}{a character entry default to "Block". This parameter is only relevant when "Exact" choice in the Method parameter is chosen. This parameter gives the choice between two C++ implemented algorithms for an exact partitioning result. See below for more details.}
+\item{ApproxAlgo}{a character entry ("Upper" by default). This parameter controls which approximation is to be used.}
 
 \item{alpha}{the significance level of the internal tests we perform (which corresponds to the FWER control of the corresponding multiple testing procedure). CIs have simultaneous significance level of 1-alpha.}
 
@@ -50,35 +51,44 @@ The exact-partitioning confidence intervals are calculated using two algorithms;
 The lower- and upper-bound CIs are calculated with an algorithm whose complexity is of order n^3. The bracketing obtained from the lower and upper bounds is generally very narrow with a maximum gap of 1. Moreover, in regular situations, the lower and upper bounds coincide on at least 50 percent of the centers yielding the exact-partitioning result. Thus, the bracketing is an alternative for an exact-partitioning algorithm for medium- and large-size samples (n>50). When a calculus of the lower- and upper-bound CIs is required, the default choice is when no adjustment on neither the lower nor the upper bounds is taken into account. Thus, the lower affine bound of the chi-square is a line passing by the quantiles at 1 and n-1 degrees of freedom, whereas the upper affine bound is a line tangent on the chi-square quantiles at n-1 degrees of freedom. The adjustment on the lower bound CIs can in some contexts improve on the CIs and increase the number of centers where the lower and upper bounds coincide. The best option is to adjust for both the lower and upper bounds (separately) in case a complexity of n^3 is not considered high for the problem the you solve.
 
 Both "Tukey" and "SeqTukey" are based on multiple comparison testing and are superior to the LR-based CIs if the centers are far apart from each others and if the standard deviations are not significantly different from each others among the centers. The sequential rejective variant of Tukey's HSD rejects at least as much as Tukey's HSD and thus produces generally shorter confidence intervals for the ranks.
+
+The "TukeyWithoutTies" method assumes that the true vector of parameters has no ties and therefore, instead of calculating a quantile q corresponding to mu=0 with set rank [1,n] for mu_i, we calculate a quantile corresponding to mu=0 with rank {i} for mu_i. The method provides shorter SCI for the ranks but is still conservative.
+
+When the standard deviations are not the same for all the means, the methods based on the partitioning principle are no guaranteed to be the same. The "Block" algorith, however, is always compatible with the lower and upper CIs provided by option "Bound".
+
+When the standard deviations are not the same the approximate methods based on the LRT are not guaranteed to cover and if the standard deviations are very different, the resulting SCIs are anticonservative.
 }
 \examples{
-TrueCenters = 1:10
-n = 10; alpha = 0.05; sigma = runif(n,min=0.5,max=1.5)
+n = 10; TrueCenters = 1:n
+alpha = 0.05; sigma = runif(n,min=0.5,max=1.5)
 y = as.numeric(sapply(1:n, function(ll) rnorm(1,TrueCenters[ll],sd=sigma[ll])))
 ind = sort.int(y, index.return = TRUE)$ix
 y = y[ind]
 sigma = sigma[ind] # The sigmas need to follow the order of the y's
-res = ic.ranks(y, sigma, Method = "Exact", ExactAlgo = "Level",
-   alpha = 0.05, control = list(trace = TRUE))
+res = ic.ranks(y, sigma, Method = "ExactLR",alpha = 0.05, control = list(trace = TRUE))
 LowerExact = res$Lower; UpperExact = res$Upper
-res = ic.ranks(y, sigma, Method = "Bound", BoundChoice = "Lower",
+res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Lower",
    control = list(adjustL = FALSE, adjustU = FALSE))
 LowerL = res$Lower; UpperL = res$Upper
-res = ic.ranks(y, sigma, Method = "Bound", BoundChoice = "Upper",
-   control = list(adjustL = FALSE, adjustU = FALSE))
+res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Upper",
+   control = list(adjustL = FALSE, adjustU = FALSE, trace=FALSE))
 LowerU = res$Lower; UpperU = res$Upper
 res = ic.ranks(y, sigma, Method = "Tukey")
 LowerTuk = res$Lower; UpperTuk = res$Upper
 res = ic.ranks(y, sigma, Method = "SeqTukey")
 LowerTukSeq = res$Lower; UpperTukSeq = res$Upper
+res = ic.ranks(y, sigma, Method = "TukeyNoTies")
+LowerTukNoTies = res$Lower; UpperTukNoTies = res$Upper
 LowerExact 
+LowerL
+LowerU
 LowerTuk 
 }
 \references{
-Diaa Al Mohamad and Erik W. van Zwet and Jelle J. Goeman and Aldo Solari, Simultaneous confidence sets for ranks using the partitioning principle - Technical report (2017).
+Diaa Al Mohamad and Erik W. van Zwet and Jelle J. Goeman and Aldo Solari, Simultaneous confidence sets for ranks using the partitioning principle - Technical report (2017). https://arxiv.org/abs/1708.02729
 
 Diaa Al Mohamad and Jelle J. Goeman and Erik W. van Zwet, An improvement of Tukey's HSD with application to ranking institutions (2017). https://arxiv.org/abs/1708.02428
 }
 \author{
-Diaa Al Mohamad and Jelle J. Goeman and Erik W. van Zwet. Correspondence to d.al_mohamad@lumc.nl
+Diaa Al Mohamad and Jelle J. Goeman and Erik W. van Zwet. Correspondence to d.al_mohamad@lumc.nl (or diaa.almohamad@gmail.com)
 }
