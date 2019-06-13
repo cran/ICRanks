@@ -5,9 +5,9 @@
 
 using namespace Rcpp;
 
-// PartitioningRankingLevel
-NumericMatrix PartitioningRankingLevel(NumericVector y, NumericVector sigma, NumericVector crit, int n, bool trace);
-RcppExport SEXP _ICRanks_PartitioningRankingLevel(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP nSEXP, SEXP traceSEXP) {
+// PartitioningRankingLevelEqSig
+NumericMatrix PartitioningRankingLevelEqSig(NumericVector y, NumericVector sigma, NumericVector crit, int n, bool trace);
+RcppExport SEXP _ICRanks_PartitioningRankingLevelEqSig(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP nSEXP, SEXP traceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,12 +16,49 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type crit(critSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
-    rcpp_result_gen = Rcpp::wrap(PartitioningRankingLevel(y, sigma, crit, n, trace));
+    rcpp_result_gen = Rcpp::wrap(PartitioningRankingLevelEqSig(y, sigma, crit, n, trace));
+    return rcpp_result_gen;
+END_RCPP
+}
+// PartitioningRankingLevelEqSigRescaled
+NumericMatrix PartitioningRankingLevelEqSigRescaled(NumericVector y, NumericVector sigma, NumericMatrix crit, NumericMatrix SampleCoverage, int MM, int n, int NbOfPermut, double alpha, int gridSize, bool trace);
+RcppExport SEXP _ICRanks_PartitioningRankingLevelEqSigRescaled(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP SampleCoverageSEXP, SEXP MMSEXP, SEXP nSEXP, SEXP NbOfPermutSEXP, SEXP alphaSEXP, SEXP gridSizeSEXP, SEXP traceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type SampleCoverage(SampleCoverageSEXP);
+    Rcpp::traits::input_parameter< int >::type MM(MMSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type NbOfPermut(NbOfPermutSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< int >::type gridSize(gridSizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
+    rcpp_result_gen = Rcpp::wrap(PartitioningRankingLevelEqSigRescaled(y, sigma, crit, SampleCoverage, MM, n, NbOfPermut, alpha, gridSize, trace));
+    return rcpp_result_gen;
+END_RCPP
+}
+// PartitioningRankingLevelUneqSig
+NumericMatrix PartitioningRankingLevelUneqSig(NumericVector y, NumericVector sigma, NumericVector crit, int n, bool trace, const int NbOfPermut, bool SwapPerm);
+RcppExport SEXP _ICRanks_PartitioningRankingLevelUneqSig(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP nSEXP, SEXP traceSEXP, SEXP NbOfPermutSEXP, SEXP SwapPermSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
+    Rcpp::traits::input_parameter< const int >::type NbOfPermut(NbOfPermutSEXP);
+    Rcpp::traits::input_parameter< bool >::type SwapPerm(SwapPermSEXP);
+    rcpp_result_gen = Rcpp::wrap(PartitioningRankingLevelUneqSig(y, sigma, crit, n, trace, NbOfPermut, SwapPerm));
     return rcpp_result_gen;
 END_RCPP
 }
 // PartitioningRankingBlockCorrectOrder
-NumericMatrix PartitioningRankingBlockCorrectOrder(NumericVector y, NumericVector sigma, NumericVector crit, NumericVector MinBlock, NumericVector MaxBlock, NumericVector Lower, NumericVector Upper, int n, bool trace);
+NumericMatrix PartitioningRankingBlockCorrectOrder(NumericVector y, NumericVector sigma, NumericVector crit, NumericVector MinBlock, NumericVector MaxBlock, IntegerVector Lower, IntegerVector Upper, int n, bool trace);
 RcppExport SEXP _ICRanks_PartitioningRankingBlockCorrectOrder(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP MinBlockSEXP, SEXP MaxBlockSEXP, SEXP LowerSEXP, SEXP UpperSEXP, SEXP nSEXP, SEXP traceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
@@ -31,18 +68,103 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type crit(critSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type MinBlock(MinBlockSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type MaxBlock(MaxBlockSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Lower(LowerSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type Upper(UpperSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type Lower(LowerSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type Upper(UpperSEXP);
     Rcpp::traits::input_parameter< int >::type n(nSEXP);
     Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
     rcpp_result_gen = Rcpp::wrap(PartitioningRankingBlockCorrectOrder(y, sigma, crit, MinBlock, MaxBlock, Lower, Upper, n, trace));
     return rcpp_result_gen;
 END_RCPP
 }
+// OnlyBlockRanking
+NumericMatrix OnlyBlockRanking(NumericVector y, NumericVector sigma, NumericVector crit, int n, bool trace, const int NbOfPermut, bool SwapPerm);
+RcppExport SEXP _ICRanks_OnlyBlockRanking(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP nSEXP, SEXP traceSEXP, SEXP NbOfPermutSEXP, SEXP SwapPermSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
+    Rcpp::traits::input_parameter< const int >::type NbOfPermut(NbOfPermutSEXP);
+    Rcpp::traits::input_parameter< bool >::type SwapPerm(SwapPermSEXP);
+    rcpp_result_gen = Rcpp::wrap(OnlyBlockRanking(y, sigma, crit, n, trace, NbOfPermut, SwapPerm));
+    return rcpp_result_gen;
+END_RCPP
+}
+// ApproximatePartitionPermutations
+NumericMatrix ApproximatePartitionPermutations(NumericVector yInit, NumericVector sigmaInit, IntegerVector LowerInit, IntegerVector UpperInit, int n, double Slop, double Intercept, double minY, double maxY, bool trace, const bool SwapPerm, const int NbOfPermut);
+RcppExport SEXP _ICRanks_ApproximatePartitionPermutations(SEXP yInitSEXP, SEXP sigmaInitSEXP, SEXP LowerInitSEXP, SEXP UpperInitSEXP, SEXP nSEXP, SEXP SlopSEXP, SEXP InterceptSEXP, SEXP minYSEXP, SEXP maxYSEXP, SEXP traceSEXP, SEXP SwapPermSEXP, SEXP NbOfPermutSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type yInit(yInitSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sigmaInit(sigmaInitSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type LowerInit(LowerInitSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type UpperInit(UpperInitSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< double >::type Slop(SlopSEXP);
+    Rcpp::traits::input_parameter< double >::type Intercept(InterceptSEXP);
+    Rcpp::traits::input_parameter< double >::type minY(minYSEXP);
+    Rcpp::traits::input_parameter< double >::type maxY(maxYSEXP);
+    Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
+    Rcpp::traits::input_parameter< const bool >::type SwapPerm(SwapPermSEXP);
+    Rcpp::traits::input_parameter< const int >::type NbOfPermut(NbOfPermutSEXP);
+    rcpp_result_gen = Rcpp::wrap(ApproximatePartitionPermutations(yInit, sigmaInit, LowerInit, UpperInit, n, Slop, Intercept, minY, maxY, trace, SwapPerm, NbOfPermut));
+    return rcpp_result_gen;
+END_RCPP
+}
+// TukeyRankingLevelEqSigRescaled
+NumericMatrix TukeyRankingLevelEqSigRescaled(NumericVector y, NumericVector sigma, NumericMatrix crit, NumericMatrix SampleCoverage, int MM, int n, int NbOfPermut, double alpha, int gridSize, bool trace);
+RcppExport SEXP _ICRanks_TukeyRankingLevelEqSigRescaled(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP SampleCoverageSEXP, SEXP MMSEXP, SEXP nSEXP, SEXP NbOfPermutSEXP, SEXP alphaSEXP, SEXP gridSizeSEXP, SEXP traceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type SampleCoverage(SampleCoverageSEXP);
+    Rcpp::traits::input_parameter< int >::type MM(MMSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type NbOfPermut(NbOfPermutSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< int >::type gridSize(gridSizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
+    rcpp_result_gen = Rcpp::wrap(TukeyRankingLevelEqSigRescaled(y, sigma, crit, SampleCoverage, MM, n, NbOfPermut, alpha, gridSize, trace));
+    return rcpp_result_gen;
+END_RCPP
+}
+// TukeyRankingLevelUneqSigRescaled
+NumericMatrix TukeyRankingLevelUneqSigRescaled(NumericVector y, NumericVector sigma, NumericMatrix crit, NumericMatrix SampleCoverage, int MM, int n, int NbOfPermut, double alpha, int gridSize, bool trace);
+RcppExport SEXP _ICRanks_TukeyRankingLevelUneqSigRescaled(SEXP ySEXP, SEXP sigmaSEXP, SEXP critSEXP, SEXP SampleCoverageSEXP, SEXP MMSEXP, SEXP nSEXP, SEXP NbOfPermutSEXP, SEXP alphaSEXP, SEXP gridSizeSEXP, SEXP traceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type y(ySEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type crit(critSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type SampleCoverage(SampleCoverageSEXP);
+    Rcpp::traits::input_parameter< int >::type MM(MMSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< int >::type NbOfPermut(NbOfPermutSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< int >::type gridSize(gridSizeSEXP);
+    Rcpp::traits::input_parameter< bool >::type trace(traceSEXP);
+    rcpp_result_gen = Rcpp::wrap(TukeyRankingLevelUneqSigRescaled(y, sigma, crit, SampleCoverage, MM, n, NbOfPermut, alpha, gridSize, trace));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ICRanks_PartitioningRankingLevel", (DL_FUNC) &_ICRanks_PartitioningRankingLevel, 5},
+    {"_ICRanks_PartitioningRankingLevelEqSig", (DL_FUNC) &_ICRanks_PartitioningRankingLevelEqSig, 5},
+    {"_ICRanks_PartitioningRankingLevelEqSigRescaled", (DL_FUNC) &_ICRanks_PartitioningRankingLevelEqSigRescaled, 10},
+    {"_ICRanks_PartitioningRankingLevelUneqSig", (DL_FUNC) &_ICRanks_PartitioningRankingLevelUneqSig, 7},
     {"_ICRanks_PartitioningRankingBlockCorrectOrder", (DL_FUNC) &_ICRanks_PartitioningRankingBlockCorrectOrder, 9},
+    {"_ICRanks_OnlyBlockRanking", (DL_FUNC) &_ICRanks_OnlyBlockRanking, 7},
+    {"_ICRanks_ApproximatePartitionPermutations", (DL_FUNC) &_ICRanks_ApproximatePartitionPermutations, 12},
+    {"_ICRanks_TukeyRankingLevelEqSigRescaled", (DL_FUNC) &_ICRanks_TukeyRankingLevelEqSigRescaled, 10},
+    {"_ICRanks_TukeyRankingLevelUneqSigRescaled", (DL_FUNC) &_ICRanks_TukeyRankingLevelUneqSigRescaled, 10},
     {NULL, NULL, 0}
 };
 
