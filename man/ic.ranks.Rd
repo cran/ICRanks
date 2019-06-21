@@ -85,22 +85,26 @@ y = y[ind]
 sigma = sigma[ind] # The sigmas need to follow the order of the y's
 res = ic.ranks(y, sigma, Method = "ExactLR",alpha = 0.05, control = list(trace = TRUE))
 LowerExact = res$Lower; UpperExact = res$Upper
-res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Lower",
-   control = list(adjustL = FALSE, adjustU = FALSE))
-LowerL = res$Lower; UpperL = res$Upper
-res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Upper",
-   control = list(adjustL = FALSE, adjustU = FALSE, trace=FALSE))
-LowerU = res$Lower; UpperU = res$Upper
+#res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Lower",
+#   control = list(adjustL = FALSE, adjustU = FALSE))
+#LowerL = res$Lower; UpperL = res$Upper
+#res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Upper",
+#   control = list(adjustL = FALSE, adjustU = FALSE, trace=FALSE))
+#LowerU = res$Lower; UpperU = res$Upper
 res = ic.ranks(y, sigma, Method = "Tukey")
 LowerTuk = res$Lower; UpperTuk = res$Upper
 res = ic.ranks(y, sigma, Method = "SeqTukey")
 LowerTukSeq = res$Lower; UpperTukSeq = res$Upper
 res = ic.ranks(y, sigma, Method = "TukeyNoTies")
 LowerTukNoTies = res$Lower; UpperTukNoTies = res$Upper
+resLR1 = ic.ranks(y, sigma, Method = "RescaledExactLR", alpha = alpha, 
+  control = list(trace = TRUE, gridSize = 4, MM = 100, RandPermut=factorial(n)))
 LowerExact 
-LowerL
-LowerU
-LowerTuk 
+#LowerL
+#LowerU
+LowerTuk
+resLR1$Lower
+resLR1$Upper 
 }
 \references{
 Diaa Al Mohamad and Erik W. van Zwet and Jelle J. Goeman and Aldo Solari, Simultaneous confidence sets for ranks using the partitioning principle - Technical report (2017). https://arxiv.org/abs/1708.02729

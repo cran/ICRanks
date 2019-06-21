@@ -47,22 +47,26 @@
 #' sigma = sigma[ind] # The sigmas need to follow the order of the y's
 #' res = ic.ranks(y, sigma, Method = "ExactLR",alpha = 0.05, control = list(trace = TRUE))
 #' LowerExact = res$Lower; UpperExact = res$Upper
-#' res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Lower",
-#'    control = list(adjustL = FALSE, adjustU = FALSE))
-#' LowerL = res$Lower; UpperL = res$Upper
-#' res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Upper",
-#'    control = list(adjustL = FALSE, adjustU = FALSE, trace=FALSE))
-#' LowerU = res$Lower; UpperU = res$Upper
+#' #res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Lower",
+#' #   control = list(adjustL = FALSE, adjustU = FALSE))
+#' #LowerL = res$Lower; UpperL = res$Upper
+#' #res = ic.ranks(y, sigma, Method = "BoundLR", BoundChoice = "Upper",
+#' #   control = list(adjustL = FALSE, adjustU = FALSE, trace=FALSE))
+#' #LowerU = res$Lower; UpperU = res$Upper
 #' res = ic.ranks(y, sigma, Method = "Tukey")
 #' LowerTuk = res$Lower; UpperTuk = res$Upper
 #' res = ic.ranks(y, sigma, Method = "SeqTukey")
 #' LowerTukSeq = res$Lower; UpperTukSeq = res$Upper
 #' res = ic.ranks(y, sigma, Method = "TukeyNoTies")
 #' LowerTukNoTies = res$Lower; UpperTukNoTies = res$Upper
+#' resLR1 = ic.ranks(y, sigma, Method = "RescaledExactLR", alpha = alpha, 
+#'   control = list(trace = TRUE, gridSize = 4, MM = 100, RandPermut=factorial(n)))
 #' LowerExact 
-#' LowerL
-#' LowerU
-#' LowerTuk 
+#' #LowerL
+#' #LowerU
+#' LowerTuk
+#' resLR1$Lower
+#' resLR1$Upper 
 #' @export
 ic.ranks = function(y, sigma = rep(1,length(y)), Method = c("ExactLR","BoundLR","Tukey","SeqTukey","ApproximateLR", "TukeyNoTies", "RescaledExactLR", "RescaledTukey"), BoundChoice = c("Upper", "Lower"), ApproxAlgo = c("Exact","Upper"), alpha = 0.05, control = list(crit = NULL, trace = TRUE, adjustL = FALSE, adjustU = FALSE, n_adjust = length(y)-1, N = 10^4, MM = 10^3, gridSize = 5, RandPermut = 0, SwapPerm = TRUE))
 {

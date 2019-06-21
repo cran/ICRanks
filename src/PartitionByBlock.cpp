@@ -33,7 +33,7 @@ double LogLikelihood(const NumericVector& y, const NumericVector& sigma, const i
 	return LogLikhood;
 }
 
-void BinaryConfig(unsigned long long int c, int* Config, int& l, const int& Shift)
+void BinaryConfig(unsigned long long int c, int*& Config, int& l, const int& Shift, const int& start)
 {
 	unsigned long long int residu = c;
 	int counter = 0; l = 0;
@@ -41,7 +41,7 @@ void BinaryConfig(unsigned long long int c, int* Config, int& l, const int& Shif
 	{
 		if (residu % 2 == 1)
 		{
-			Config[l] = counter+Shift;
+			Config[l+start] = counter+Shift;
 			l++;
 		}
 
@@ -50,7 +50,7 @@ void BinaryConfig(unsigned long long int c, int* Config, int& l, const int& Shif
 	}
 	if (residu == 1)
 	{
-		Config[l] = counter+Shift;
+		Config[l+start] = counter+Shift;
 		l++;
 	}
 }
@@ -289,305 +289,6 @@ void CorrectPermutationsB(const NumericVector& y, const NumericVector& sigma, co
 		}
 		if(j<n-i && EqSigma) break;
 	}
-}
-// This function is no longer used
-NumericMatrix PartitioningRankingBlock(NumericVector y, NumericVector sigma, NumericVector crit, NumericVector MinBlock, NumericVector MaxBlock, IntegerVector Lower, IntegerVector Upper, int n, bool trace)
-{
-	// Calculate the Likelihood matrix of the blocks.
-	double** LikelihoodMat = new double*[n];
-	for (int i = 0; i<n; i++)
-	{
-		LikelihoodMat[i] = new double[n];
-		for (int j = i; j<n; j++)
-		{
-			LikelihoodMat[i][j] = LogLikelihood(y, sigma, i, j);
-		}
-	}
-	// Calculate the vector of powers to 2.
-	unsigned long long int* PowToN = new unsigned long long int[n];
-	PowToN[0] = 1;
-	for (int i = 1; i < n; i++)
-	{
-		PowToN[i] = 2 * PowToN[i-1];
-	}
-
-	// Test the upper level with all equalities
-	double Likelihood0 = LikelihoodMat[0][n - 1];
-	if (Likelihood0<crit[0])
-	{
-		for (int i = 0; i<n; i++)
-		{
-			Lower[i] = 0;
-			Upper[i] = n - 1;
-		}
-		if(trace == true){
-			Rcout << "Process ended with trivial confidence intervals.\n";
-		} 
-	}
-	else
-	{
-		int ConfigBase[2]; // It points out to the extremeties of the tested block.
-		int* InqPosi = new int[n - 1];
-		int* ConfigCompRight = new int[n - 1]; 
-		int ConfigBaseLen = 2;
-		int BlockConfig[2];
-		for (int i = 0; i < n - 1; i++)
-		{
-			if(trace == true) {
-				Rcout << i << ".";
-			}
-			if (MaxBlock[i] >= (MinBlock[i] + 1))
-			{
-				int k = MaxBlock[i];
-				while (k >= MinBlock[i] + 1)
-				{
-					if (i > 0)
-					{
-						ConfigBase[0] = i - 1;
-						ConfigBase[1] = k + i;
-						ConfigBaseLen = 2;
-					}
-					if (i == 0)
-					{
-						ConfigBase[0] = k;
-						ConfigBaseLen = 1;
-					}
-					if (k + i >= n-1)
-					{
-						ConfigBase[0] = i - 1;
-						ConfigBaseLen = 1;
-					}
-					if (i == 0 && k + i >= n-1) {
-						ConfigBaseLen = 0;
-					}
-					ConfigCompRight[0] = ConfigBase[0];
-					ConfigCompRight[1] = ConfigBase[1];
-					BlockConfig[0] = ConfigBase[0];
-					BlockConfig[1] = ConfigBase[1];
-					if (BlockConfig[1] > n - 1) {
-						BlockConfig[1] = n - 1;
-					}
-
-					/********************************************************/
-					/************ First Case: Left configuration ***********/
-					/********************************************************/
-
-					if (k + i >= n - 2) // substract 1 for subscribts diff
-					{
-						BlockConfig[1] = n - 1;
-						// In this case, there is only one side where Partitioing must be done; the left side.
-						// The partitions must cover mu_0 to mu_{i-2}
-						unsigned long long int m = 2;
-						unsigned long long int c = 1;
-						if (i > 2)
-						{
-							int j = 0, l;
-							m = PowToN[i-1];
-							// Test the top hypothesis corresponding to mu_1=...=mu_{i-1}<mu_i=..=mu_n
-							InqPosi[0] = ConfigBase[0];
-							l = 1;
-							if (ConfigBaseLen == 2) 
-							{
-								InqPosi[1] = ConfigBase[1];
-								l++;
-							}
-							// Check if PAVA is required
-			
-							if(PAVACheck(y,sigma,l,InqPosi,n))
-							{
-								k--;
-								continue;
-							}
-							// Inside each configuration, calculate each group's share in the likelihood
-							Likelihood0 = LikelihoodMat[0][InqPosi[0]];
-							j = 0;
-							while (j <= (l - 2))
-							{
-								Likelihood0 += LikelihoodMat[InqPosi[j] + 1][InqPosi[j + 1]];
-								j++;
-							}
-							Likelihood0 += LikelihoodMat[InqPosi[l - 1] + 1][n - 1];
-							if (Likelihood0 < crit[l])
-							{
-								RankUpdate(Lower, Upper, InqPosi, l, n);
-								break;
-							}
-							// Check the significance of the current block to the actual ranking. If not significant, then there is no need to start the partitioning. Smaller blocks will also be the same.
-							//if (Lower[BlockConfig[1]]<=BlockConfig[0] + 1 && Upper[BlockConfig[0] + 1]>=BlockConfig[1]) break;
-							// Check the block itself without any additions to the left or the right
-							if(PAVACheck(y,sigma,l,InqPosi,n))
-							{
-								if(LikelihoodMat[InqPosi[0]+1][InqPosi[1]] < crit[n-InqPosi[1]+InqPosi[0]+1])
-								{
-									RankUpdate(Lower, Upper, InqPosi, l, n);
-									break;
-								}
-							}
-							for (c = 0; c<m ; c++)// When c = m-1, we get a binary representation of all ones. This is already tested with the initialization
-							{
-
-								BinaryConfig(c, InqPosi, l, 0);
-								// Add ConfigBase to InqPosi. Keep in mind that we only use the l+ConfigBaseLen first elements.
-								InqPosi[l] = ConfigBase[0];
-								InqPosi[l + 1] = ConfigBase[1];
-								// Update the length of InqPosi
-								l += ConfigBaseLen; // If ConfigBase is empty, the previous attributions will not have effect on the configuration since its length is controled by l.
-
-
-								/*********************************/
-								if(PAVACheck(y,sigma,l,InqPosi,n))
-								{
-									continue;
-								}
-								// Inside each configuration, calculate each group's share in the likelihood
-								Likelihood0 = LikelihoodMat[0][InqPosi[0]];
-								j = 0;
-								while (j <= (l - 2))
-								{
-									Likelihood0 += LikelihoodMat[InqPosi[j] + 1][InqPosi[j + 1]];
-									j++;
-								}
-								Likelihood0 += LikelihoodMat[InqPosi[l - 1] + 1][n - 1];
-
-								// Update the ranking
-								if (Likelihood0 < crit[l])
-								{
-									RankUpdate(Lower, Upper, InqPosi, l, n);
-									break;// The block was accepted once, and no need to check others.
-								}
-							}
-							if (c < m) break;
-						}
-					}
-
-
-
-					/***************************************************************************/
-					/************ Second Case: Right and possibly Left configuration ***********/
-					/***************************************************************************/
-
-					else
-					{
-						unsigned long long int m = 2;
-						unsigned long long int c = 1; // I need the counter to check if I was able to find a hypothesis that was not rejected.
-						//unsigned long long int c1 = 1;
-						if (n - k - i > 2)
-						{
-							
-							// Test the top level in this sub-partition
-							int j = 0, l;
-							m = PowToN[n - k - i - 2]; // The right part contains n-i-k-1 centers.
-							// Check the significance of the current block to the actual ranking. If not significant, then there is no need to start the partitioning. Smaller blocks will also be the same.
-							//if (Lower[BlockConfig[1]]<=BlockConfig[0] + 1 && Upper[BlockConfig[0] + 1]>=BlockConfig[1]) break;
-							for (c = 0; c < m ; c++)
-							{
-
-								BinaryConfig(c, ConfigCompRight + ConfigBaseLen, l, k + i + 1);// ConfigBase if existed, is already included in ConfigCompRight.
-								// Update the length of ConfigCompRight.
-								l += ConfigBaseLen;
-
-								/*********************************/
-								if(PAVACheck(y,sigma,l,ConfigCompRight,n))
-								{
-									continue;
-								}
-								// Inside each configuration, calculate each group's share in the likelihood
-								Likelihood0 = LikelihoodMat[0][ConfigCompRight[0]];
-								j = 0;
-								while (j <= (l - 2))
-								{
-									Likelihood0 += LikelihoodMat[ConfigCompRight[j] + 1][ConfigCompRight[j + 1]];
-									j++;
-								}
-								Likelihood0 += LikelihoodMat[ConfigCompRight[l - 1] + 1][n - 1];
-
-								// Update the ranking
-								if (Likelihood0 < crit[l])
-								{
-									
-									RankUpdate(Lower, Upper, ConfigCompRight, l, n);
-									break;// The block was accepted once, and no need to check others.
-								}
-
-
-								// Add a configuration to the left of ConfigBase in case there is suffcient place.
-								/***************Third case: a configuration to the left and a configuration to the right*******************/
-
-								// The top hypothesis in this sub-partitioning was just tested.
-								unsigned long long int cc = 1;
-								unsigned long long int mm = 2; // Initial values here are necessary to cancel the break hereafter in case, we do not enter the loop over cc.
-								if (i > 1)
-								{
-									int ll;
-									mm = PowToN[i - 1];
-									// Notice that the upper hypothesis in this sub-partitioning corresponds to testing the block itself. This is already done in the initial CIs.
-									for (cc = 0; cc<mm ; cc++) // If the left side does not contain any elements, this loop wont start.
-									{
-
-										BinaryConfig(cc, InqPosi, ll, 0);
-										// Add now the configuration in the right side
-										for (int iter = 0; iter < l; iter++) InqPosi[iter + ll] = ConfigCompRight[iter];
-										// Update the length of InqPosi
-										ll += l;
-
-										/*********************************/
-										if(PAVACheck(y,sigma,ll,InqPosi,n))
-										{
-											continue;
-										}
-										// Inside each configuration, calculate each group's share in the likelihood
-										Likelihood0 = LikelihoodMat[0][InqPosi[0]];
-										j = 0;
-										while (j <= (ll - 2))
-										{
-											Likelihood0 += LikelihoodMat[InqPosi[j] + 1][InqPosi[j + 1]];
-											j++;
-										}
-										Likelihood0 += LikelihoodMat[InqPosi[ll - 1] + 1][n - 1];
-
-										// Update the ranking
-										if (Likelihood0 < crit[ll])
-										{
-											RankUpdate(Lower, Upper, InqPosi, ll, n);
-											break;// The block was accepted once, and no need to check others.
-										}
-									}
-									if (cc < mm) break;
-								}
-
-							}
-							if (c < m) break;
-						}
-					}
-					k--;
-				}
-
-			}
-
-		}
-
-		
-
-		delete[] InqPosi;
-		delete[] ConfigCompRight;
-
-	}
-
-	// Free some space.
-	for (int i = 0; i<n; i++)
-	{
-		delete[] LikelihoodMat[i];
-	}
-	delete[] LikelihoodMat;
-	delete[] PowToN;
-	
-	NumericMatrix CIs(n,2);
-	for(int i = 0; i<n; i++)
-	{
-		CIs[i] = Lower[i]+1;
-		CIs[n+i] = Upper[i]+1;
-	}
-	return CIs;
 }
 void UnrankCombin(int*& S, unsigned long long int m, int k, unsigned long long int**& CnkMat)
 {
@@ -1209,7 +910,7 @@ NumericMatrix PartitioningRankingLevelEqSigRescaled(NumericVector y, NumericVect
 
 		if((trace == true) && (I % 500000 == 0)) {Rcout<<I<<".";}
 		//# Permute
-		RandPermut = sample(n,n);//clone(RandPermutInit);
+		RandPermut = sample(RandPermutInit,n);//clone(RandPermutInit);
 		//std::random_shuffle(RandPermut.begin(), RandPermut.end());
 		for(int s = 0; s<n; s++)
 		{
@@ -1445,7 +1146,7 @@ NumericMatrix PartitioningRankingLevelUneqSig(NumericVector y, NumericVector sig
 		if((trace == true) && (I % 100 == 0)) {Rcout<<I<<".";}
 					
 		//# Permute
-		RandPermut = sample(n,n);//clone(RandPermutInit);
+		RandPermut = sample(RandPermutInit,n);//clone(RandPermutInit);
 		//std::random_shuffle(RandPermut.begin(), RandPermut.end(), randWrapper);
 		for(int s = 0; s<n; s++)
 		{
@@ -1607,7 +1308,7 @@ NumericMatrix PartitioningRankingBlockCorrectOrder(NumericVector y, NumericVecto
 							// Check the block itself without any additions to the left or the right
 							for (c = 0; c<m ; c++)
 							{
-								BinaryConfig(c, InqPosi, l, 0);
+								BinaryConfig(c, InqPosi, l, 0, 0);
 								// Add ConfigBase to InqPosi. Keep in mind that we only use the l+ConfigBaseLen first elements.
 								InqPosi[l] = ConfigBase[0];
 								InqPosi[l + 1] = ConfigBase[1];
@@ -1658,7 +1359,7 @@ NumericMatrix PartitioningRankingBlockCorrectOrder(NumericVector y, NumericVecto
 							//if (Lower[BlockConfig[1]]<=BlockConfig[0] + 1 && Upper[BlockConfig[0] + 1]>=BlockConfig[1]) break;
 							for (c = 0; c < m ; c++)
 							{
-								BinaryConfig(c, ConfigCompRight + ConfigBaseLen, l, k + i + 1);// ConfigBase if existed, is already included in ConfigCompRight.
+								BinaryConfig(c, ConfigCompRight, l, k + i + 1, ConfigBaseLen);// ConfigBase if existed, is already included in ConfigCompRight.
 								// Update the length of ConfigCompRight.
 								l += ConfigBaseLen;
 								/*********************************/
@@ -1695,7 +1396,7 @@ NumericMatrix PartitioningRankingBlockCorrectOrder(NumericVector y, NumericVecto
 									for (cc = 0; cc<mm ; cc++) // If the left side does not contain any elements, this loop wont start.
 									{
 
-										BinaryConfig(cc, InqPosi, ll, 0);
+										BinaryConfig(cc, InqPosi, ll, 0, 0);
 										// Add now the configuration in the right side
 										for (int iter = 0; iter < l; iter++) InqPosi[iter + ll] = ConfigCompRight[iter];
 										// Update the length of InqPosi
@@ -1982,9 +1683,7 @@ NumericMatrix OnlyBlockRanking(NumericVector y, NumericVector sigma, NumericVect
 			Lower[J-1] = fmin(Lower[J-1], Lower_temp[J+I-1]);
 			Upper[J-1] = fmax(Upper[J-1], Upper_temp[J+I-1]);
 		 	I = I+1;
-			//if(sum(Lower==rep(1,n) & Upper==rep(n,n)) == n) return(list(Lower=Lower,Upper=Upper))
-			//if(Lower[10] == 1) Rcout<<"I="<<I<<", J="<<J<<"\n";
-			//if(trace == true) {Rcout<<"\n";}
+			
 		}
 	}
 	
@@ -2034,7 +1733,7 @@ NumericMatrix OnlyBlockRanking(NumericVector y, NumericVector sigma, NumericVect
 		if((trace == true) && (I % 100 == 0)) {Rcout<<I<<".";}
 					
 		//# Permute
-		RandPermut = sample(n,n);//clone(RandPermutInit);
+		RandPermut = sample(RandPermutInit,n);//clone(RandPermutInit);
 		//std::random_shuffle(RandPermut.begin(), RandPermut.end());
 		for(int s = 0; s<n; s++)
 		{
@@ -2125,20 +1824,13 @@ void IndividContribs(const NumericVector& y_temp, const NumericVector& sigma_tem
 			for(int i = j-1; i>=1; i--)
 			{
 			 	
-				//#LogL[i,j] = sum((y_temp[i:j] - sum(y_temp[i:j]/sigma_temp[i:j]^2)/sum(1/sigma_temp[i:j]^2))^2/sigma_temp[i:j]^2)
-				//# Minimum contribution is either attained on the whole block (i,j) or at the sum of the minimum of two adjacent sub-blocks of (i,j).
-				//IndividContribBlock[i][j] = fmin(0,LogL[i+K-1][j+K-1] - (j-i)*Slop);
-				//IndividContribBlock[i][j] = 0;
-				//if(LogL[i+K-1][j+K-1] - (j-i)*Slop<0) IndividContribBlock[i][j] = LogL[i+K-1][j+K-1] - (j-i)*Slop;
+				
 				indMinContrib = 0; MinContribBlock = IndividContribBlock[i][j];
 				for(int s = 1; s<=(j-i); s++)
 				{
 				  if(AverageBlock[i][i+s-1][2] <= AverageBlock[i+s][j][1] && AverageBlock[i][i+s-1][1]>=Binf && AverageBlock[i+s][j][2]<=Bsup)// # order is respected and no PAVA
 				  {
-					//MinContribBlock = fmin(IndividContribBlock[i][i+s-1]+IndividContribBlock[i+s][j], LogL[i+K-1][j+K-1] - (j-i)*Slop);
-					//MinContribBlock = IndividContribBlock[i][i+s-1]+IndividContribBlock[i+s][j];
-					//if(IndividContribBlock[i][i+s-1]+IndividContribBlock[i+s][j] > IndividContribBlock[i][j]) MinContribBlock = LogL[i+K-1][j+K-1] - (j-i)*Slop;
-					//if(IndividContribBlock[i][j]>MinContribBlock)
+					
 					if(IndividContribBlock[i][i+s-1]+IndividContribBlock[i+s][j] < IndividContribBlock[i][j])
 					{
 					  //IndividContribBlock[i][j] = MinContribBlock;
@@ -2174,37 +1866,9 @@ void IndividContribs(const NumericVector& y_temp, const NumericVector& sigma_tem
 						AverageBlock[i][j][2] = y_temp[j+K-1];
 						IndividContribBlock[i][j] = 0.0;
 					}
-					/*if(IndividContribBlock[i][j] < 0.0000000001 && IndividContribBlock[i][j]> -0.0000000001)
-					{
-						//minYBlock_ind = 1+which_min(y_temp[seq(K-1+i,K-1+j)]); 
-						//maxYBlock_ind = 1+which_max(y_temp[seq(K-1+i,K-1+j)]);
-						WhichBounds(y_temp, K-1+i, K-1+j, minYBlock_ind, maxYBlock_ind);
-	
-						if(minYBlock_ind==i && maxYBlock_ind==j) 
-						{
-						  AverageBlock[i][j][1] = y_temp[K-1+minYBlock_ind];
-						  AverageBlock[i][j][2] = y_temp[K-1+maxYBlock_ind];
-						}
-						else
-						{//# The current block must be ignored so that its contribution should never imply nonrejection
-						  //if(K-1+minYBlock_ind>n || K-1+maxYBlock_ind>n) {Rcout<<"i="<<i<<",j="<<j<<",K="<<K<<", minYBlock_ind="<<minYBlock_ind<<", maxYBlock_ind="<<maxYBlock_ind<<"Out of boundary 1\n"; break;}
-						  AverageBlock[i][j][1] = y_temp[K-1+minYBlock_ind];
-						  AverageBlock[i][j][2] = y_temp[K-1+maxYBlock_ind];
-						  IndividContribBlock[i][j] = R_PosInf; 
-						}
-					}
-					else //# block contributes as mu_i=...=mu_j
-					{
-					  	AverageBlock[i][j][1] = Summation(y_temp, sigma_temp, K-1+i, K-1+j);
-					  	AverageBlock[i][j][2] = AverageBlock[i][j][1];
-					}*/
+					
 				}
-				/*else
-				{
-				  //# Update the averages in the minimum contributing block
-				  AverageBlock[i][j][1] = AverageBlock[i][i+indMinContrib-1][1];
-				  AverageBlock[i][j][2] = AverageBlock[i+indMinContrib][j][2];
-				}*/
+				
 			}
 		}
 	}
@@ -2866,7 +2530,7 @@ NumericMatrix TukeyRankingLevelEqSigRescaled(NumericVector y, NumericVector sigm
 
 		if((trace == true) && (I % 500000 == 0)) {Rcout<<I<<".";}
 		//# Permute
-		RandPermut = sample(n,n);//clone(RandPermutInit);
+		RandPermut = sample(RandPermutInit,n);//clone(RandPermutInit);
 		//std::random_shuffle(RandPermut.begin(), RandPermut.end());
 		for(int s = 0; s<n; s++)
 		{
@@ -3220,7 +2884,7 @@ NumericMatrix TukeyRankingLevelUneqSigRescaled(NumericVector y, NumericVector si
 
 		if((trace == true) && (I % 500000 == 0)) {Rcout<<I<<".";}
 		//# Permute
-		RandPermut = sample(n,n);//clone(RandPermutInit);
+		RandPermut = sample(RandPermutInit,n);//clone(RandPermutInit);
 		//std::random_shuffle(RandPermut.begin(), RandPermut.end());
 		for(int s = 0; s<n; s++)
 		{
